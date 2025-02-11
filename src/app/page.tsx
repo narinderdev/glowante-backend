@@ -7,6 +7,9 @@ export default function Home() {
       <p className="text-lg text-gray-200 mt-3 text-center max-w-lg">
         Discover the best beauty salons and book your favorite services with ease.
       </p>
+      <p className="text-lg text-gray-200 mt-3 text-center max-w-lg">
+        Book Local Beauty and Wellness Services.
+      </p>
       <a 
         href="https://glowante.com/"
         target="_blank" 
