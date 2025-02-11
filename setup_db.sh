@@ -1,27 +1,43 @@
 #!/bin/bash
 
+# Database Credentials
 DB_USER="glowante_user"
 DB_PASS="Glowante@!23"
 DB_NAME="glowante_local_db"
+DB_HOST="localhost"
+DB_PORT="5432"
 
-# Check if user exists
+# Export Password for Authentication
+export PGPASSWORD="$DB_PASS"
+
+echo "Starting Database Setup..."
+
+# Step 1: Ensure PostgreSQL is Running
+if ! pg_isready -h $DB_HOST -p $DB_PORT -U postgres; then
+    echo "Error: PostgreSQL is not running. Please start it first."
+    exit 1
+fi
+
+# Step 2: Check if user exists
 USER_EXISTS=$(psql -U postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'")
-
 if [ "$USER_EXISTS" != "1" ]; then
   echo "Creating user $DB_USER..."
   psql -U postgres -c "CREATE ROLE $DB_USER WITH LOGIN PASSWORD '$DB_PASS';"
   psql -U postgres -c "ALTER ROLE $DB_USER CREATEDB;"
+else
+  echo "User $DB_USER already exists."
 fi
 
-# Check if database exists
+# Step 3: Check if database exists
 DB_EXISTS=$(psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'")
-
 if [ "$DB_EXISTS" != "1" ]; then
   echo "Creating database $DB_NAME..."
   psql -U postgres -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
+else
+  echo "Database $DB_NAME already exists."
 fi
 
-# Define the table creation SQL
+# Step 4: Define the table creation SQL
 TABLE_CREATION_SQL="
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
@@ -97,8 +113,14 @@ CREATE TABLE IF NOT EXISTS salon_services (
 );
 "
 
-# Run table creation SQL in the database
+# Step 5: Create Tables in Database
 echo "Creating tables in $DB_NAME..."
-PGPASSWORD=$DB_PASS psql -U $DB_USER -d $DB_NAME -c "$TABLE_CREATION_SQL"
+psql -U $DB_USER -d $DB_NAME -c "$TABLE_CREATION_SQL"
+if [ $? -eq 0 ]; then
+    echo "Tables created successfully in $DB_NAME."
+else
+    echo "Error creating tables."
+    exit 1
+fi
 
-echo "Database and table setup completed!"
+echo "Database and table setup completed successfully! 🚀"
