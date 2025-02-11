@@ -7,7 +7,8 @@ export default async function handler(req, res) {
       const users = await UserModel.getAllUsers();
       sendResponse(res, true, users);
     } catch (error) {
-      sendResponse(res, false, {}, 'Failed to fetch users', 500, 500);
+      console.error('Failed to fetch users:', error);
+      return sendResponse(res, false, {}, 'Failed to fetch users', 500);
     }
   } else if (req.method === 'POST') {
     try {
@@ -18,7 +19,8 @@ export default async function handler(req, res) {
       const newUser = await UserModel.createUser(first_name, last_name, email, password, phone_number, country_code);
       sendResponse(res, true, newUser, '', 0, 201);
     } catch (error) {
-      sendResponse(res, false, {}, 'Error creating user', 500, 500);
+      console.error('Error creating user:', error);
+      return sendResponse(res, false, {}, 'Error creating user', 500);
     }
   } else {
     sendResponse(res, false, {}, 'Method not allowed', 405, 405);

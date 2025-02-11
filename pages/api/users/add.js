@@ -33,6 +33,7 @@ export default async function handler(req, res) {
 
     return sendResponse(res, true, newUser, 'User created successfully', 0, 201);
   } catch (error) {
+    console.error('Error creating user:', error);
     return sendResponse(res, false, {}, 'Error creating user', 500);
   }
 }

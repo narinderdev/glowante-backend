@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { userType, phone_number, country_code } = req.body;
+    const { phone_number, country_code } = req.body;
 
     if (!phone_number || !country_code) {
       return sendResponse(res, false, {}, 'Phone number and country code are required', 400);
