@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Dependencies
+      - name: Install Dependencies (Verify Locally)
         run: npm install
 
       - name: Build Project
@@ -45,17 +45,42 @@ jobs:
           script: |
             cd /root/glowante/glowante-${{ github.ref_name }}/glowante-backend
             git pull origin ${{ github.ref_name }}
-            npm install
-            if [[ "${{ github.ref_name }}" == "main" ]]; then
-              npm run build:prod
-              pm2 restart glowante-prod
-            elif [[ "${{ github.ref_name }}" == "dev" ]]; then
-              npm run build:dev
-              pm2 restart glowante-dev
-            elif [[ "${{ github.ref_name }}" == "staging" ]]; then
-              npm run build:staging
-              pm2 restart glowante-staging
-            elif [[ "${{ github.ref_name }}" == "uat" ]]; then
-              npm run build:uat
-              pm2 restart glowante-uat
+
+            # Run npm install only if package-lock.json changed
+            if git diff --name-only HEAD^ HEAD | grep -q "package-lock.json"; then
+              echo "🔄 package-lock.json changed. Running npm install..."
+              npm install
+            else
+              echo "✅ No dependency changes. Skipping npm install."
             fi
+
+            # Set up process name and environment
+            if [[ "${{ github.ref_name }}" == "main" ]]; then
+              APP_NAME="glowante-prod"
+              PORT=4000
+              START_CMD="npm run start:prod"
+            elif [[ "${{ github.ref_name }}" == "dev" ]]; then
+              APP_NAME="glowante-dev"
+              PORT=4010
+              START_CMD="npm run start:dev"
+            elif [[ "${{ github.ref_name }}" == "staging" ]]; then
+              APP_NAME="glowante-staging"
+              PORT=4020
+              START_CMD="npm run start:staging"
+            elif [[ "${{ github.ref_name }}" == "uat" ]]; then
+              APP_NAME="glowante-uat"
+              PORT=4030
+              START_CMD="npm run start:uat"
+            fi
+
+            # Check if PM2 process exists, restart if running, start if not
+            if pm2 list | grep -q $APP_NAME; then
+              echo "✅ $APP_NAME is running. Restarting..."
+              pm2 restart $APP_NAME
+            else
+              echo "⚠️ $APP_NAME is NOT running. Starting..."
+              pm2 start npm --name "$APP_NAME" -- run "$START_CMD"
+            fi
+
+            # Save PM2 process list
+            pm2 save
