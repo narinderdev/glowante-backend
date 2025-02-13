@@ -43,7 +43,7 @@ jobs:
           username: root
           key: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
           script: |
-            cd /root/glowante/glowante-${{ github.ref_name }}
+            cd /root/glowante/glowante-${{ github.ref_name }}/glowante-backend
             git pull origin ${{ github.ref_name }}
             npm install
             if [[ "${{ github.ref_name }}" == "main" ]]; then
