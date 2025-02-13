@@ -53,19 +53,19 @@ jobs:
             if [[ "${{ github.ref_name }}" == "main" ]]; then
               APP_NAME="glowante-prod"
               PORT=4000
-              START_CMD="npm run prod"
+              START_CMD="prod"
             elif [[ "${{ github.ref_name }}" == "dev" ]]; then
               APP_NAME="glowante-dev"
               PORT=4010
-              START_CMD="npm run dev"
+              START_CMD="dev"
             elif [[ "${{ github.ref_name }}" == "staging" ]]; then
               APP_NAME="glowante-staging"
               PORT=4020
-              START_CMD="npm run staging"
+              START_CMD="staging"
             elif [[ "${{ github.ref_name }}" == "uat" ]]; then
               APP_NAME="glowante-uat"
               PORT=4030
-              START_CMD="npm run uat"
+              START_CMD="uat"
             fi
 
             # Check if PM2 process exists, restart if running, start if not
