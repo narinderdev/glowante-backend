@@ -3,28 +3,59 @@ name: Deploy to DigitalOcean
 on:
   push:
     branches:
+      - main
       - dev
-      - test
+      - staging
       - uat
-      - prod
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Deploy to DigitalOcean
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.DIGITALOCEAN_IP }}
-        username: root
-        key: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
-        script: |
-          cd /root/glowante-backend
-          git pull origin ${{ github.ref_name }}
-          npm install
-          npm run build
-          pm2 restart glowante-app
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Project
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            npm run build:prod
+          elif [[ "${{ github.ref_name }}" == "dev" ]]; then
+            npm run build:dev
+          elif [[ "${{ github.ref_name }}" == "staging" ]]; then
+            npm run build:staging
+          elif [[ "${{ github.ref_name }}" == "uat" ]]; then
+            npm run build:uat
+          fi
+
+      - name: Deploy to DigitalOcean
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.DIGITALOCEAN_IP }}
+          username: root
+          key: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
+          script: |
+            cd /root/glowante/glowante-${{ github.ref_name }}
+            git pull origin ${{ github.ref_name }}
+            npm install
+            if [[ "${{ github.ref_name }}" == "main" ]]; then
+              npm run build:prod
+              pm2 restart glowante-prod
+            elif [[ "${{ github.ref_name }}" == "dev" ]]; then
+              npm run build:dev
+              pm2 restart glowante-dev
+            elif [[ "${{ github.ref_name }}" == "staging" ]]; then
+              npm run build:staging
+              pm2 restart glowante-staging
+            elif [[ "${{ github.ref_name }}" == "uat" ]]; then
+              npm run build:uat
+              pm2 restart glowante-uat
+            fi

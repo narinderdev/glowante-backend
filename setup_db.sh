@@ -1,40 +1,81 @@
 #!/bin/bash
 
-# Database Credentials
-DB_USER="glowante_user"
-DB_PASS="Glowante@!23"
-DB_NAME="glowante_local_db"
-DB_HOST="localhost"
-DB_PORT="5432"
+# Usage: ./setup_database.sh [environment]
+# Example: ./setup_database.sh dev
+
+# Check if the environment argument is provided
+if [ -z "$1" ]; then
+    echo "❌ Error: No environment specified. Please use one of the following:"
+    echo "Usage: $0 [dev|staging|uat|prod]"
+    exit 1
+fi
+
+ENVIRONMENT=$1
+
+# Database Credentials Based on Environment
+case $ENVIRONMENT in
+  dev)
+    DB_USER="dev_glowante_user"
+    DB_PASS="Dev@Glowante@!23"
+    DB_NAME="dev_db"
+    DB_HOST="localhost"
+    DB_PORT="5432"
+    ;;
+  staging)
+    DB_USER="staging_glowante_user"
+    DB_PASS="Staging@Glowante@!23"
+    DB_NAME="staging_db"
+    DB_HOST="localhost"
+    DB_PORT="5432"
+    ;;
+  uat)
+    DB_USER="uat_glowante_user"
+    DB_PASS="Uat@Glowante@!23"
+    DB_NAME="uat_db"
+    DB_HOST="localhost"
+    DB_PORT="5432"
+    ;;
+  prod)
+    DB_USER="prod_glowante_user"
+    DB_PASS="Prod@Glowante@!23"
+    DB_NAME="prod_db"
+    DB_HOST="localhost"
+    DB_PORT="5432"
+    ;;
+  *)
+    echo "❌ Error: Invalid environment '$ENVIRONMENT'. Please use dev, staging, uat, or prod."
+    exit 1
+    ;;
+esac
 
 # Export Password for Authentication
 export PGPASSWORD="$DB_PASS"
 
-echo "Starting Database Setup..."
+echo "🚀 Starting Database Setup for '$ENVIRONMENT' Environment..."
 
 # Step 1: Ensure PostgreSQL is Running
 if ! pg_isready -h $DB_HOST -p $DB_PORT -U postgres; then
-    echo "Error: PostgreSQL is not running. Please start it first."
+    echo "❌ Error: PostgreSQL is not running on $DB_HOST:$DB_PORT. Please start it first."
     exit 1
 fi
 
 # Step 2: Check if user exists
-USER_EXISTS=$(psql -U postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'")
+USER_EXISTS=$(psql -U postgres -h $DB_HOST -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'")
 if [ "$USER_EXISTS" != "1" ]; then
-  echo "Creating user $DB_USER..."
-  psql -U postgres -c "CREATE ROLE $DB_USER WITH LOGIN PASSWORD '$DB_PASS';"
-  psql -U postgres -c "ALTER ROLE $DB_USER CREATEDB;"
+  echo "🔹 Creating user $DB_USER..."
+  psql -U postgres -h $DB_HOST -c "CREATE ROLE $DB_USER WITH LOGIN PASSWORD '$DB_PASS';"
+  psql -U postgres -h $DB_HOST -c "ALTER ROLE $DB_USER CREATEDB;"
 else
-  echo "User $DB_USER already exists."
+  echo "✅ User $DB_USER already exists."
 fi
 
 # Step 3: Check if database exists
-DB_EXISTS=$(psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'")
+DB_EXISTS=$(psql -U postgres -h $DB_HOST -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'")
 if [ "$DB_EXISTS" != "1" ]; then
-  echo "Creating database $DB_NAME..."
-  psql -U postgres -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
+  echo "🔹 Creating database $DB_NAME..."
+  psql -U postgres -h $DB_HOST -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
 else
-  echo "Database $DB_NAME already exists."
+  echo "✅ Database $DB_NAME already exists."
 fi
 
 # Step 4: Define the table creation SQL
@@ -114,13 +155,13 @@ CREATE TABLE IF NOT EXISTS salon_services (
 "
 
 # Step 5: Create Tables in Database
-echo "Creating tables in $DB_NAME..."
-psql -U $DB_USER -d $DB_NAME -c "$TABLE_CREATION_SQL"
+echo "🔹 Creating tables in $DB_NAME..."
+psql -U $DB_USER -h $DB_HOST -d $DB_NAME -c "$TABLE_CREATION_SQL"
 if [ $? -eq 0 ]; then
-    echo "Tables created successfully in $DB_NAME."
+    echo "✅ Tables created successfully in $DB_NAME."
 else
-    echo "Error creating tables."
+    echo "❌ Error creating tables."
     exit 1
 fi
 
-echo "Database and table setup completed successfully! 🚀"
+echo "🎉 Database and table setup completed successfully for '$ENVIRONMENT'! 🚀"
