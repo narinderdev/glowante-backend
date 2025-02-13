@@ -3,7 +3,7 @@
 # Usage: ./setup_database.sh [environment]
 # Example: ./setup_database.sh dev
 
-# Check if the environment argument is provided
+# ✅ 1️⃣ Ensure Environment is Provided
 if [ -z "$1" ]; then
     echo "❌ Error: No environment specified. Please use one of the following:"
     echo "Usage: $0 [dev|staging|uat|prod]"
@@ -12,35 +12,27 @@ fi
 
 ENVIRONMENT=$1
 
-# Database Credentials Based on Environment
+# ✅ 2️⃣ Define Database Credentials Per Environment
 case $ENVIRONMENT in
   dev)
     DB_USER="dev_glowante_user"
     DB_PASS="Dev@Glowante@!23"
     DB_NAME="dev_db"
-    DB_HOST="localhost"
-    DB_PORT="5432"
     ;;
   staging)
     DB_USER="staging_glowante_user"
     DB_PASS="Staging@Glowante@!23"
     DB_NAME="staging_db"
-    DB_HOST="localhost"
-    DB_PORT="5432"
     ;;
   uat)
     DB_USER="uat_glowante_user"
     DB_PASS="Uat@Glowante@!23"
     DB_NAME="uat_db"
-    DB_HOST="localhost"
-    DB_PORT="5432"
     ;;
   prod)
     DB_USER="prod_glowante_user"
     DB_PASS="Prod@Glowante@!23"
     DB_NAME="prod_db"
-    DB_HOST="localhost"
-    DB_PORT="5432"
     ;;
   *)
     echo "❌ Error: Invalid environment '$ENVIRONMENT'. Please use dev, staging, uat, or prod."
@@ -48,38 +40,46 @@ case $ENVIRONMENT in
     ;;
 esac
 
-# Export Password for Authentication
+# ✅ 3️⃣ Export Password for Current User
 export PGPASSWORD="$DB_PASS"
+DB_HOST="localhost"
+DB_PORT="5432"
 
 echo "🚀 Starting Database Setup for '$ENVIRONMENT' Environment..."
 
-# Step 1: Ensure PostgreSQL is Running
+# ✅ 4️⃣ Check if PostgreSQL is Running
 if ! pg_isready -h $DB_HOST -p $DB_PORT -U postgres; then
     echo "❌ Error: PostgreSQL is not running on $DB_HOST:$DB_PORT. Please start it first."
     exit 1
 fi
 
-# Step 2: Check if user exists
-USER_EXISTS=$(psql -U postgres -h $DB_HOST -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'")
+# ✅ 5️⃣ Ensure Postgres Superuser Credentials Work
+if ! PGPASSWORD="Glowante@!23" psql -U postgres -h $DB_HOST -c "\q"; then
+    echo "❌ Error: Cannot authenticate as 'postgres'. Please check your PostgreSQL password."
+    exit 1
+fi
+
+# ✅ 6️⃣ Check if User Exists
+USER_EXISTS=$(PGPASSWORD="Glowante@!23" psql -U postgres -h $DB_HOST -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'")
 if [ "$USER_EXISTS" != "1" ]; then
   echo "🔹 Creating user $DB_USER..."
-  psql -U postgres -h $DB_HOST -c "CREATE ROLE $DB_USER WITH LOGIN PASSWORD '$DB_PASS';"
-  psql -U postgres -h $DB_HOST -c "ALTER ROLE $DB_USER CREATEDB;"
+  PGPASSWORD="Glowante@!23" psql -U postgres -h $DB_HOST -c "CREATE ROLE $DB_USER WITH LOGIN PASSWORD '$DB_PASS';"
+  PGPASSWORD="Glowante@!23" psql -U postgres -h $DB_HOST -c "ALTER ROLE $DB_USER CREATEDB;"
 else
   echo "✅ User $DB_USER already exists."
 fi
 
-# Step 3: Check if database exists
-DB_EXISTS=$(psql -U postgres -h $DB_HOST -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'")
+# ✅ 7️⃣ Check if Database Exists
+DB_EXISTS=$(PGPASSWORD="Glowante@!23" psql -U postgres -h $DB_HOST -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'")
 if [ "$DB_EXISTS" != "1" ]; then
   echo "🔹 Creating database $DB_NAME..."
-  psql -U postgres -h $DB_HOST -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
+  PGPASSWORD="Glowante@!23" psql -U postgres -h $DB_HOST -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
 else
   echo "✅ Database $DB_NAME already exists."
 fi
 
-# Step 4: Define the table creation SQL
-TABLE_CREATION_SQL="
+# ✅ 8️⃣ Define Table Creation SQL
+TABLE_CREATION_SQL=$(cat <<EOF
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR(100),
@@ -152,11 +152,12 @@ CREATE TABLE IF NOT EXISTS salon_services (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-"
+EOF
+)
 
-# Step 5: Create Tables in Database
+# ✅ 9️⃣ Execute Table Creation SQL
 echo "🔹 Creating tables in $DB_NAME..."
-psql -U $DB_USER -h $DB_HOST -d $DB_NAME -c "$TABLE_CREATION_SQL"
+echo "$TABLE_CREATION_SQL" | PGPASSWORD="$DB_PASS" psql -U $DB_USER -h $DB_HOST -d $DB_NAME
 if [ $? -eq 0 ]; then
     echo "✅ Tables created successfully in $DB_NAME."
 else
