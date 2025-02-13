@@ -38,12 +38,15 @@ jobs:
             cd /root/glowante/glowante-${{ github.ref_name }}/glowante-backend
             git pull origin ${{ github.ref_name }}
 
-            # Run npm install only if package-lock.json changed
-            if git diff --name-only HEAD^ HEAD | grep -q "package-lock.json"; then
-              echo "🔄 package-lock.json changed. Running npm install..."
+            # Fetch the last deployed commit from remote
+            LAST_COMMIT=$(git rev-parse origin/${{ github.ref_name }})
+
+            # Check if package.json changed
+            if git diff --name-only $LAST_COMMIT HEAD | grep -q "package.json"; then
+              echo "🔄 package.json changed. Running npm install..."
               npm install
             else
-              echo "✅ No dependency changes. Skipping npm install."
+              echo "✅ No changes in package.json. Skipping npm install."
             fi
 
             # Set up process name and environment
