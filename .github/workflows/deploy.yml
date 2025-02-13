@@ -26,15 +26,7 @@ jobs:
 
       - name: Build Project
         run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
-            npm run build:prod
-          elif [[ "${{ github.ref_name }}" == "dev" ]]; then
-            npm run build:dev
-          elif [[ "${{ github.ref_name }}" == "staging" ]]; then
-            npm run build:staging
-          elif [[ "${{ github.ref_name }}" == "uat" ]]; then
-            npm run build:uat
-          fi
+          npm run build
 
       - name: Deploy to DigitalOcean
         uses: appleboy/ssh-action@v0.1.10
@@ -58,19 +50,19 @@ jobs:
             if [[ "${{ github.ref_name }}" == "main" ]]; then
               APP_NAME="glowante-prod"
               PORT=4000
-              START_CMD="npm run start:prod"
+              START_CMD="npm run prod"
             elif [[ "${{ github.ref_name }}" == "dev" ]]; then
               APP_NAME="glowante-dev"
               PORT=4010
-              START_CMD="npm run start:dev"
+              START_CMD="npm run dev"
             elif [[ "${{ github.ref_name }}" == "staging" ]]; then
               APP_NAME="glowante-staging"
               PORT=4020
-              START_CMD="npm run start:staging"
+              START_CMD="npm run staging"
             elif [[ "${{ github.ref_name }}" == "uat" ]]; then
               APP_NAME="glowante-uat"
               PORT=4030
-              START_CMD="npm run start:uat"
+              START_CMD="npm run uat"
             fi
 
             # Check if PM2 process exists, restart if running, start if not
