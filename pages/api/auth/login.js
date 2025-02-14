@@ -99,6 +99,7 @@ export default async function handler(req, res) {
       0
     );
   } catch (error) {
+    console.log('Error during login:', error);
     console.error('Error during login:', error);
     return sendResponse(res, false, {}, 'Failed to send OTP for login', 500);
   }
