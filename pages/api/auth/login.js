@@ -1,7 +1,7 @@
 import db from '../../../lib/db';
 import { sendResponse } from '../../../lib/response';
 import corsMiddleware from '../../../lib/cors';
-import { generateOTP } from '../../../lib/otp'; // Utility to generate OTP
+// import { generateOTP } from '../../../lib/otp'; // Utility to generate OTP
 import axios from 'axios'; // For sending SMS via Fast2SMS
 import dotenv from 'dotenv';
 
