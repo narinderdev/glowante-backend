@@ -52,7 +52,7 @@ export default async function handler(req, res) {
     const role_id = role.role_id;
 
     // ✅ Step 7: Generate OTP
-    const otp = generateOTP();
+    const otp = '123456';//SAME OTP FOR LOGIN  //generateOTP();
     const otp_expiry = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 minutes
 
     // ✅ Step 8: Check if the user exists with the given phone number
