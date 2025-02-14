@@ -75,20 +75,20 @@ export default async function handler(req, res) {
     }
 
     // ✅ Step 10: Send OTP via SMS API (e.g., Fast2SMS)
-    await axios.post(
-      'https://www.fast2sms.com/dev/bulkV2',
-      new URLSearchParams({
-        variables_values: otp,
-        route: 'otp',
-        numbers: phone_number,
-      }),
-      {
-        headers: {
-          authorization: process.env.FAST2SMS_API_KEY, // Store API key in .env
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      }
-    );
+    // await axios.post(
+    //   'https://www.fast2sms.com/dev/bulkV2',
+    //   new URLSearchParams({
+    //     variables_values: otp,
+    //     route: 'otp',
+    //     numbers: phone_number,
+    //   }),
+    //   {
+    //     headers: {
+    //       authorization: process.env.FAST2SMS_API_KEY, // Store API key in .env
+    //       'Content-Type': 'application/x-www-form-urlencoded',
+    //     },
+    //   }
+    // );
 
     // ✅ Step 11: Return success response
     return sendResponse(
