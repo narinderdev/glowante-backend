@@ -1,5 +1,6 @@
 import db from '../../../lib/db';
 import { sendResponse } from '../../../lib/response';
+import corsMiddleware from '../../../lib/cors';
 import { generateOTP } from '../../../lib/otp'; // Utility to generate OTP
 import axios from 'axios'; // For sending SMS via Fast2SMS
 import dotenv from 'dotenv';
@@ -7,7 +8,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default async function handler(req, res) {
-
+  await corsMiddleware(req, res, () => {}); // Enable CORS
   if (req.method !== 'POST') {
     return sendResponse(res, false, {}, 'Method Not Allowed', 405);
   }
