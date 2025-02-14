@@ -6,7 +6,9 @@ import { NextConfig } from "next";
 // Function to detect the current Git branch
 const getGitBranch = (): string => {
   try {
-    return execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
+    const branch = execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
+    console.log(`✅ CURRENT BRANCH: ${branch}`);
+    return branch;
   } catch (error) {
     console.warn("⚠️ Could not determine Git branch, defaulting to 'dev'");
     return "dev"; // Default to development if branch detection fails
@@ -15,7 +17,6 @@ const getGitBranch = (): string => {
 
 // Map Git branches to environment files
 const branch = getGitBranch();
-console.log("CURRENT BRANCH", branch)
 const envMap: Record<string, string> = {
   main: ".env.prod",
   dev: ".env.dev",
@@ -26,6 +27,8 @@ const envMap: Record<string, string> = {
 // Determine the correct `.env` file based on the branch
 const envFile = envMap[branch] || ".env.dev"; // Defaults to `.env.dev`
 
+console.log(`🔍 Using environment file: ${envFile}`);
+
 // Load the selected environment file
 if (fs.existsSync(envFile)) {
   dotenv.config({ path: envFile });
@@ -34,6 +37,12 @@ if (fs.existsSync(envFile)) {
   console.warn(`⚠️ Environment file ${envFile} not found! Using defaults.`);
 }
 
+// Log all environment variables (SANITIZED)
+console.log("🔹 Loaded Environment Variables:");
+console.log({
+  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+});
+
 // Next.js Configuration
 const nextConfig: NextConfig = {
   env: {
@@ -41,9 +50,11 @@ const nextConfig: NextConfig = {
   },
   reactStrictMode: true,
   async headers() {
+    console.log("✅ Setting CORS Headers...");
+
     return [
       {
-        source: "/api/:path*",
+        source: "/api/(.*)",
         headers: [
           { key: "Access-Control-Allow-Credentials", value: "true" },
           { key: "Access-Control-Allow-Origin", value: "*" }, // Allow all origins (change in production)
@@ -54,5 +65,7 @@ const nextConfig: NextConfig = {
     ];
   },
 };
+
+console.log("✅ Next.js configuration loaded successfully!");
 
 export default nextConfig;

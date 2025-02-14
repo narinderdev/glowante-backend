@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default async function handler(req, res) {
+  console.log("✅ Received request:", req.method, req.headers.origin);
   await corsMiddleware(req, res, () => {}); // Enable CORS
   if (req.method !== 'POST') {
     return sendResponse(res, false, {}, 'Method Not Allowed', 405);
