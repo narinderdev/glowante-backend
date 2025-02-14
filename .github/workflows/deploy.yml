@@ -39,6 +39,7 @@ jobs:
             git pull origin ${{ github.ref_name }}
 
             npm install
+            npm run build
 
             # Set up process name and environment
             if [[ "${{ github.ref_name }}" == "main" ]]; then
