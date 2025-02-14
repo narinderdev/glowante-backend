@@ -38,16 +38,7 @@ jobs:
             cd /root/glowante/glowante-${{ github.ref_name }}/glowante-backend
             git pull origin ${{ github.ref_name }}
 
-            # Fetch the last deployed commit from remote
-            LAST_COMMIT=$(git rev-parse origin/${{ github.ref_name }})
-
-            # Check if package.json changed
-            if git diff --name-only $LAST_COMMIT HEAD | grep -q "package.json"; then
-              echo "🔄 package.json changed. Running npm install..."
-              npm install
-            else
-              echo "✅ No changes in package.json. Skipping npm install."
-            fi
+            npm install
 
             # Set up process name and environment
             if [[ "${{ github.ref_name }}" == "main" ]]; then
