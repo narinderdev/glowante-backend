@@ -7,6 +7,17 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default async function handler(req, res) {
+  // ✅ CORS Headers
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Origin", "*"); // Allow all origins (change in production)
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, DELETE, PUT");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  // ✅ Handle preflight requests
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+
   if (req.method !== 'POST') {
     return sendResponse(res, false, {}, 'Method Not Allowed', 405);
   }
