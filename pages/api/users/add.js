@@ -17,11 +17,11 @@ export default async function handler(req, res) {
       role_name,
       city,
       state,
-      postal_code
+      zipcode
     } = req.body;
 
     // Validate required input fields
-    if (!first_name || !last_name || !phone_number || !role_name) {
+    if (!first_name || !last_name || !country_code || !phone_number || !role_name) {
       return sendResponse(res, false, {}, 'Please fill all required fields', 400);
     }
 
@@ -46,25 +46,25 @@ export default async function handler(req, res) {
 
     // ✅ Step 2: Insert user into the database
     const newUser = await db.one(
-      `INSERT INTO users (first_name, last_name, email, phone_number, profile_picture_url, status, is_verified, created_at, updated_at) 
-       VALUES ($1, $2, $3, $4, $5, 'Active', FALSE, NOW(), NOW()) 
-       RETURNING id, first_name, last_name, email, phone_number, profile_picture_url, status, is_verified`,
-      [first_name, last_name, email, phone_number, profile_picture_url]
+      `INSERT INTO users (first_name, last_name, email, country_code, phone_number, profile_picture_url, status, is_verified, created_at, updated_at) 
+       VALUES ($1, $2, $3, $4, $5, $6, 'Active', FALSE, NOW(), NOW()) 
+       RETURNING id, first_name, last_name, email, country_code, phone_number, profile_picture_url, status, is_verified`,
+      [first_name, last_name, email, country_code, phone_number, profile_picture_url]
     );
 
     // ✅ Step 3: Assign the role to the new user in user_roles
     await db.none(`INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)`, [newUser.id, role_id]);
 
     // ✅ Step 4: Insert Address (only if provided)
-    if (city || state || postal_code) {
+    if (city || state || zipcode) {
       await db.none(
-        `INSERT INTO user_addresses (user_id, city, state, postal_code, status, created_at, updated_at) 
+        `INSERT INTO user_addresses (user_id, city, state, zipcode, status, created_at, updated_at) 
          VALUES ($1, $2, $3, $4, 'Active', NOW(), NOW())`,
-        [newUser.id, city || null, state || null, postal_code || null]
+        [newUser.id, city || null, state || null, zipcode || null]
       );
     }
 
-    return sendResponse(res, true, newUser, 'User created successfully', 0, 201);
+    return sendResponse(res, true, newUser, '', 0, 201);
   } catch (error) {
     console.error('Error creating user:', error);
     return sendResponse(res, false, {}, 'Error creating user', 500);
