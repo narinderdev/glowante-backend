@@ -64,10 +64,10 @@ export default async function handler(req, res) {
     } else {
       // ✅ Step 9: Create a new user and assign a role
       user = await db.one(
-        `INSERT INTO users (phone_number, otp, otp_expiry, is_verified, status, created_at, updated_at) 
-         VALUES ($1, $2, $3, FALSE, 'Active', NOW(), NOW()) 
+        `INSERT INTO users (country_code, phone_number, otp, otp_expiry, is_verified, status, created_at, updated_at) 
+         VALUES ($1, $2, $3, $4, FALSE, 'Active', NOW(), NOW()) 
          RETURNING id, phone_number, is_verified, status, created_at, updated_at`,
-        [phone_number, otp, otp_expiry]
+        [country_code, phone_number, otp, otp_expiry]
       );
 
       // Assign the role to the new user in `user_roles`
