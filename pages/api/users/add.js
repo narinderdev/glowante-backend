@@ -15,9 +15,13 @@ export default async function handler(req, res) {
     }
 
     // Check if user already exists
-    const existingUser = await db.oneOrNone('SELECT * FROM users WHERE email = $1 OR phone_number = $2', [email, phone_number]);
-    if (existingUser) {
-      return sendResponse(res, false, {}, 'User with this email or phone number already exists', 409);
+    const existingUserEmail = await db.oneOrNone('SELECT * FROM users WHERE email = $1', [email]);
+    if (existingUserEmail) {
+      return sendResponse(res, false, {}, 'User with this email already exists', 409);
+    }
+    const existingUserPhone = await db.oneOrNone('SELECT * FROM users WHERE phone_number = $1', [phone_number]);
+    if (existingUserPhone) {
+      return sendResponse(res, false, {}, 'User with this phone number already exists', 409);
     }
 
     // ✅ Step 1: Get role_id from role_name
