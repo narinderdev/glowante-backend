@@ -9,11 +9,11 @@ const UserModel = {
     return await db.oneOrNone('SELECT * FROM users WHERE id = $1', [id]);
   },
 
-  createUser: async (first_name, last_name, email, password, phone_number, country_code) => {
+  createUser: async (first_name, last_name, email,  phone_number, country_code) => {
     return await db.one(
-      `INSERT INTO users (first_name, last_name, email, password, phone_number, country_code)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [first_name, last_name, email, password, phone_number, country_code]
+      `INSERT INTO users (first_name, last_name, email, phone_number, country_code)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [first_name, last_name, email, phone_number, country_code]
     );
   },
 };

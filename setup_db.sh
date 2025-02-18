@@ -85,7 +85,6 @@ CREATE TABLE IF NOT EXISTS users (
     first_name VARCHAR(100),
     last_name VARCHAR(100),
     email VARCHAR(255) UNIQUE,
-    password VARCHAR(255),
     phone_number VARCHAR(15) UNIQUE,
     profile_picture_url TEXT,
     otp VARCHAR(6),
