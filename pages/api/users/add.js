@@ -15,6 +15,7 @@ export default async function handler(req, res) {
       profile_picture_url, 
       country_code, 
       role_name,
+      street,
       city,
       state,
       zipcode
@@ -56,11 +57,11 @@ export default async function handler(req, res) {
     await db.none(`INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)`, [newUser.id, role_id]);
 
     // ✅ Step 4: Insert Address (only if provided)
-    if (city || state || zipcode) {
+    if ( street || city || state || zipcode) {
       await db.none(
-        `INSERT INTO user_addresses (user_id, city, state, zipcode, status, created_at, updated_at) 
-         VALUES ($1, $2, $3, $4, 'Active', NOW(), NOW())`,
-        [newUser.id, city || null, state || null, zipcode || null]
+        `INSERT INTO user_addresses (user_id, street, city, state, zipcode, status, created_at, updated_at) 
+         VALUES ($1, $2, $3, $4, $5, 'Active', NOW(), NOW())`,
+        [newUser.id, street || null, city || null, state || null, zipcode || null]
       );
     }
 
