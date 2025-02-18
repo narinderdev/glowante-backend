@@ -110,9 +110,10 @@ CREATE TABLE IF NOT EXISTS user_roles (
 CREATE TABLE IF NOT EXISTS user_addresses (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    city VARCHAR(100) NOT NULL,
-    state VARCHAR(100) NOT NULL,
-    zipcode VARCHAR(20) NOT NULL,
+    street VARCHAR(255),
+    city VARCHAR(100),
+    state VARCHAR(100),
+    zipcode VARCHAR(20),
     status VARCHAR(20) DEFAULT 'Active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -203,5 +204,6 @@ check_and_add_column() {
 
 # ✅ 11️⃣ Apply Changes for New Columns
 # This function can be reused for any column checking and adding
+check_and_add_column "user_addresses" "street" "VARCHAR(255)"
 
 echo "🎉 Database and table setup completed successfully for '$ENVIRONMENT'! 🚀"
