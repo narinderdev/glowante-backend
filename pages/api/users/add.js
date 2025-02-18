@@ -7,11 +7,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { first_name, last_name, email, phone_number, profile_picture_url, country_code, role_name } = req.body;
+    const { 
+      first_name, 
+      last_name, 
+      email, 
+      phone_number, 
+      profile_picture_url, 
+      country_code, 
+      role_name,
+      city,
+      state,
+      postal_code
+    } = req.body;
 
-    // Validate input
-    if (!first_name || !last_name || !email || !phone_number || !country_code || !role_name) {
-      return sendResponse(res, false, {}, 'All fields are required', 400);
+    // Validate required input fields
+    if (!first_name || !last_name || !phone_number || !role_name) {
+      return sendResponse(res, false, {}, 'Please fill all required fields', 400);
     }
 
     // Check if user already exists
@@ -33,7 +44,7 @@ export default async function handler(req, res) {
 
     const role_id = role.role_id;
 
-    // Insert user into the database
+    // ✅ Step 2: Insert user into the database
     const newUser = await db.one(
       `INSERT INTO users (first_name, last_name, email, phone_number, profile_picture_url, status, is_verified, created_at, updated_at) 
        VALUES ($1, $2, $3, $4, $5, 'Active', FALSE, NOW(), NOW()) 
@@ -41,10 +52,19 @@ export default async function handler(req, res) {
       [first_name, last_name, email, phone_number, profile_picture_url]
     );
 
-    // ✅ Step 2: Assign the role to the new user in user_roles
+    // ✅ Step 3: Assign the role to the new user in user_roles
     await db.none(`INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)`, [newUser.id, role_id]);
 
-    return sendResponse(res, true, newUser, 'User created successfully with role', 0, 201);
+    // ✅ Step 4: Insert Address (only if provided)
+    if (city || state || postal_code) {
+      await db.none(
+        `INSERT INTO user_addresses (user_id, city, state, postal_code, status, created_at, updated_at) 
+         VALUES ($1, $2, $3, $4, 'Active', NOW(), NOW())`,
+        [newUser.id, city || null, state || null, postal_code || null]
+      );
+    }
+
+    return sendResponse(res, true, newUser, 'User created successfully', 0, 201);
   } catch (error) {
     console.error('Error creating user:', error);
     return sendResponse(res, false, {}, 'Error creating user', 500);
