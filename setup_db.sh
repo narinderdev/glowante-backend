@@ -78,49 +78,130 @@ else
   echo "✅ Database $DB_NAME already exists."
 fi
 
-# ✅ 8️⃣ Define Schema for Tables and Columns
-declare -A TABLE_COLUMNS
-TABLE_COLUMNS["users"]="id SERIAL PRIMARY KEY, first_name VARCHAR(100), last_name VARCHAR(100), email VARCHAR(255) UNIQUE, country_code VARCHAR(5) NOT NULL, phone_number VARCHAR(15) UNIQUE, profile_picture_url TEXT, otp VARCHAR(6), otp_expiry TIMESTAMP, is_verified BOOLEAN DEFAULT FALSE, status VARCHAR(20) DEFAULT 'Active', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-TABLE_COLUMNS["roles"]="role_id SERIAL PRIMARY KEY, role_name VARCHAR(50) NOT NULL UNIQUE"
-TABLE_COLUMNS["user_roles"]="user_id INT REFERENCES users(id) ON DELETE CASCADE, role_id INT REFERENCES roles(role_id) ON DELETE CASCADE, PRIMARY KEY (user_id, role_id)"
-TABLE_COLUMNS["user_addresses"]="id SERIAL PRIMARY KEY, user_id INT REFERENCES users(id) ON DELETE CASCADE, city VARCHAR(100) NOT NULL, state VARCHAR(100) NOT NULL, zipcode VARCHAR(20) NOT NULL, status VARCHAR(20) DEFAULT 'Active', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-TABLE_COLUMNS["services"]="id SERIAL PRIMARY KEY, service_name VARCHAR(255) NOT NULL, description VARCHAR(255), status VARCHAR(20) DEFAULT 'Active'"
-TABLE_COLUMNS["salons"]="id SERIAL PRIMARY KEY, salon_name VARCHAR(255) NOT NULL, address VARCHAR(255) NOT NULL, phone_no VARCHAR(15), email VARCHAR(255), status VARCHAR(20) DEFAULT 'Active', salon_owner_id INT REFERENCES users(id) ON DELETE SET NULL, opening_time VARCHAR(255), closing_time VARCHAR(255), salon_description VARCHAR(255), salon_picture_url TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-TABLE_COLUMNS["subservices"]="id SERIAL PRIMARY KEY, service_id INT REFERENCES services(id) ON DELETE CASCADE, subservice_name VARCHAR(255) NOT NULL, subservice_description VARCHAR(255), status VARCHAR(20) DEFAULT 'Active', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-TABLE_COLUMNS["salon_services"]="id SERIAL PRIMARY KEY, salon_id INT REFERENCES salons(id) ON DELETE CASCADE, service_id INT REFERENCES services(id) ON DELETE CASCADE, subservice_id INT REFERENCES subservices(id) ON DELETE CASCADE, price VARCHAR(10), duration VARCHAR(100), description VARCHAR(255), status VARCHAR(20) DEFAULT 'Active', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+# ✅ 8️⃣ Define Table Creation SQL
+TABLE_CREATION_SQL=$(cat <<EOF
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    email VARCHAR(255) UNIQUE,
+    country_code VARCHAR(5) NOT NULL,
+    phone_number VARCHAR(15) UNIQUE,
+    profile_picture_url TEXT,
+    otp VARCHAR(6),
+    otp_expiry TIMESTAMP,
+    is_verified BOOLEAN DEFAULT FALSE,
+    status VARCHAR(20) DEFAULT 'Active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-# ✅ 9️⃣ Check and Add Missing Columns for Tables Dynamically
+CREATE TABLE IF NOT EXISTS roles (
+    role_id SERIAL PRIMARY KEY,
+    role_name VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS user_roles (
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    role_id INT REFERENCES roles(role_id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, role_id)
+);
+
+CREATE TABLE IF NOT EXISTS user_addresses (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(100) NOT NULL,
+    zipcode VARCHAR(20) NOT NULL,
+    status VARCHAR(20) DEFAULT 'Active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS services (
+    id SERIAL PRIMARY KEY,
+    service_name VARCHAR(255) NOT NULL,
+    description VARCHAR(255),
+    status VARCHAR(20) DEFAULT 'Active'
+);
+
+CREATE TABLE IF NOT EXISTS salons (
+    id SERIAL PRIMARY KEY,
+    salon_name VARCHAR(255) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    phone_no VARCHAR(15),
+    email VARCHAR(255),
+    status VARCHAR(20) DEFAULT 'Active',
+    salon_owner_id INT REFERENCES users(id) ON DELETE SET NULL,
+    opening_time VARCHAR(255),
+    closing_time VARCHAR(255),
+    salon_description VARCHAR(255),
+    salon_picture_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS subservices (
+    id SERIAL PRIMARY KEY,
+    service_id INT REFERENCES services(id) ON DELETE CASCADE,
+    subservice_name VARCHAR(255) NOT NULL,
+    subservice_description VARCHAR(255),
+    status VARCHAR(20) DEFAULT 'Active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS salon_services (
+    id SERIAL PRIMARY KEY,
+    salon_id INT REFERENCES salons(id) ON DELETE CASCADE,
+    service_id INT REFERENCES services(id) ON DELETE CASCADE,
+    subservice_id INT REFERENCES subservices(id) ON DELETE CASCADE,
+    price VARCHAR(10),
+    duration VARCHAR(100),
+    description VARCHAR(255),
+    status VARCHAR(20) DEFAULT 'Active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+EOF
+)
+
+# ✅ 9️⃣ Execute Table Creation SQL
+echo "🔹 Creating tables in $DB_NAME..."
+echo "$TABLE_CREATION_SQL" | PGPASSWORD="$DB_PASS" psql -U $DB_USER -h $DB_HOST -d $DB_NAME
+if [ $? -eq 0 ]; then
+    echo "✅ Tables created successfully in $DB_NAME."
+else
+    echo "❌ Error creating tables."
+    exit 1
+fi
+
+# ✅ 10️⃣ Check and Add Missing Columns in Each Table
 check_and_add_column() {
     local table=$1
     local column=$2
     local column_type=$3
+    echo "🔹 Checking column '$column' in table '$table'..."
 
-    # Check if column exists
-    COLUMN_EXISTS=$(PGPASSWORD="$DB_PASS" psql -U $DB_USER -h $DB_HOST -d $DB_NAME -tAc "SELECT 1 FROM information_schema.columns WHERE table_name = '$table' AND column_name = '$column'")
-    
-    if [ "$COLUMN_EXISTS" != "1" ]; then
+    COLUMN_EXISTS=$(PGPASSWORD="$DB_PASS" psql -U $DB_USER -h $DB_HOST -d $DB_NAME -tAc "SELECT column_name FROM information_schema.columns WHERE table_name = '$table' AND column_name = '$column';")
+
+    if [ -z "$COLUMN_EXISTS" ]; then
         echo "🔹 Adding column '$column' to table '$table'..."
         PGPASSWORD="$DB_PASS" psql -U $DB_USER -h $DB_HOST -d $DB_NAME -c "ALTER TABLE $table ADD COLUMN $column $column_type;"
+        if [ $? -eq 0 ]; then
+            echo "✅ Column '$column' added to table '$table'."
+        else
+            echo "❌ Error adding column '$column' to table '$table'."
+        fi
     else
         echo "✅ Column '$column' already exists in table '$table'."
     fi
 }
 
-# ✅ 10️⃣ Iterate Over Tables and Columns
-for table in "${!TABLE_COLUMNS[@]}"; do
-    # Create table if it doesn't exist
-    CREATE_TABLE_SQL="CREATE TABLE IF NOT EXISTS $table (${TABLE_COLUMNS[$table]});"
-    echo "🔹 Creating table '$table' if not exists..."
-    PGPASSWORD="$DB_PASS" psql -U $DB_USER -h $DB_HOST -d $DB_NAME -c "$CREATE_TABLE_SQL"
-    
-    # Check and add missing columns
-    IFS=',' read -ra COLUMNS <<< "${TABLE_COLUMNS[$table]}"
-    for column in "${COLUMNS[@]}"; do
-        column_details=$(echo $column | sed 's/^ *//;s/ *$//')
-        column_name=$(echo $column_details | cut -d' ' -f1)
-        column_type=$(echo $column_details | cut -d' ' -f2-)
-        check_and_add_column "$table" "$column_name" "$column_type"
-    done
-done
+# Example: Add missing columns
+# check_and_add_column "table_name" "new_column" "new_column_type"
+
+# ✅ 11️⃣ Apply Changes for New Columns
+# This function can be reused for any column checking and adding
 
 echo "🎉 Database and table setup completed successfully for '$ENVIRONMENT'! 🚀"
