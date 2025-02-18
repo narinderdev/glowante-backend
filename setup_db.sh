@@ -130,12 +130,17 @@ CREATE TABLE IF NOT EXISTS salons (
     id SERIAL PRIMARY KEY,
     salon_name VARCHAR(255) NOT NULL,
     address VARCHAR(255) NOT NULL,
-    phone_no VARCHAR(15),
-    email VARCHAR(255),
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(100) NOT NULL,
+    country_code VARCHAR(5) NOT NULL,
+    phone_no VARCHAR(15) NOT NULL,
+    alternate_country_code VARCHAR(5) NOT NULL,
+    alternate_phone_no VARCHAR(15) NOT NULL,
+    email VARCHAR(255) NOT NULL,
     status VARCHAR(20) DEFAULT 'Active',
     salon_owner_id INT REFERENCES users(id) ON DELETE SET NULL,
-    opening_time VARCHAR(255),
-    closing_time VARCHAR(255),
+    opening_time VARCHAR(255) NOT NULL,
+    closing_time VARCHAR(255) NOT NULL,
     salon_description VARCHAR(255),
     salon_picture_url TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -205,5 +210,10 @@ check_and_add_column() {
 # ✅ 11️⃣ Apply Changes for New Columns
 # This function can be reused for any column checking and adding
 check_and_add_column "user_addresses" "street" "VARCHAR(255)"
+check_and_add_column "salons" "alternate_phone_no" "VARCHAR(15)"
+check_and_add_column "salons" "alternate_country_code" "VARCHAR(5)"
+check_and_add_column "salons" "country_code" "VARCHAR(5)"
+check_and_add_column "salons" "city" "VARCHAR(100)"
+check_and_add_column "salons" "state" "VARCHAR(100)"
 
 echo "🎉 Database and table setup completed successfully for '$ENVIRONMENT'! 🚀"
