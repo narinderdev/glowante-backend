@@ -36,6 +36,11 @@ jobs:
           key: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
           script: |
             cd /root/glowante/glowante-${{ github.ref_name }}/glowante-backend
+
+            # Run the database setup script
+            chmod +x setup_db.sh # Ensure the script has execute permissions
+            ./setup_db.sh ${{ github.ref_name }} # Run the script
+
             git pull origin ${{ github.ref_name }}
 
             npm install
