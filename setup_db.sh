@@ -206,14 +206,6 @@ check_and_add_column() {
 
 # Example: Add missing columns
 # check_and_add_column "table_name" "new_column" "new_column_type"
-
-# ✅ 11️⃣ Apply Changes for New Columns
 # This function can be reused for any column checking and adding
-check_and_add_column "user_addresses" "street" "VARCHAR(255)"
-check_and_add_column "salons" "alternate_phone_no" "VARCHAR(15)"
-check_and_add_column "salons" "alternate_country_code" "VARCHAR(5)"
-check_and_add_column "salons" "country_code" "VARCHAR(5)"
-check_and_add_column "salons" "city" "VARCHAR(100)"
-check_and_add_column "salons" "state" "VARCHAR(100)"
 
 echo "🎉 Database and table setup completed successfully for '$ENVIRONMENT'! 🚀"
