@@ -49,14 +49,15 @@ export default async function handler(req, res) {
       await db.none(`UPDATE user_roles SET role_id = $1 WHERE user_id = $2`, [role_id, id]);
     }
 
-    // ✅ Step 5: Update Address if provided
+    // ✅ Step 5: Update or Insert Address
+    let updatedAddress = null;
     if (address) {
       const { street, city, state, zipcode } = address;
       const existingAddress = await db.oneOrNone(`SELECT * FROM user_addresses WHERE user_id = $1`, [id]);
 
       if (existingAddress) {
         // Update existing address
-        await db.none(
+        updatedAddress = await db.one(
           `UPDATE user_addresses 
            SET street = COALESCE($2, street),
                city = COALESCE($3, city),
@@ -64,11 +65,11 @@ export default async function handler(req, res) {
                zipcode = COALESCE($5, zipcode),
                updated_at = NOW()
            WHERE user_id = $1`,
-          [id, street, city, state, zipcode]
+           [id, street || null, city || null, state || null, zipcode || null]
         );
       } else {
         // Insert new address
-        await db.none(
+        updatedAddress = await db.none(
           `INSERT INTO user_addresses (user_id, street, city, state, zipcode, status, created_at, updated_at) 
            VALUES ($1, $2, $3, $4, $5, 'Active', NOW(), NOW())`,
           [id, street, city, state, zipcode]
@@ -76,7 +77,8 @@ export default async function handler(req, res) {
       }
     }
 
-    return sendResponse(res, true, updatedUser, 'User updated successfully');
+    // ✅ Step 6: Send response with updated user and address
+    return sendResponse(res, true, { ...updatedUser, address: updatedAddress }, '');
   } catch (error) {
     console.error('Error updating user:', error);
     return sendResponse(res, false, {}, 'Error updating user', 500);

@@ -54,16 +54,17 @@ export default async function handler(req, res) {
     await db.none(`INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)`, [newUser.id, role_id]);
 
     // ✅ Step 4: Insert Address (only if provided)
+    let updatedAddress = null;
     if (address) {
       const { city, state, zipcode, street } = address;
-      await db.none(
+      updatedAddress = await db.none(
         `INSERT INTO user_addresses (user_id, street, city, state, zipcode, status, created_at, updated_at) 
          VALUES ($1, $2, $3, $4, $5, 'Active', NOW(), NOW())`,
         [newUser.id, street || null, city || null, state || null, zipcode || null]
       );
     }
 
-    return sendResponse(res, true, newUser, '', 0, 201);
+    return sendResponse(res, true, { ...newUser, address: updatedAddress }, '', 0, 201);
   } catch (error) {
     console.error('Error creating user:', error);
     return sendResponse(res, false, {}, 'Error creating user', 500);
