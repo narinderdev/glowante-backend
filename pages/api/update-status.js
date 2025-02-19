@@ -25,8 +25,12 @@ export default async function handler(req, res) {
       table = 'users';
     } else if (type === 'salon') {
       table = 'salons';
-    } else {
-      return sendResponse(res, false, {}, 'Invalid type, must be "user" or "salon"', 400);
+    } else if (type === 'category') {
+      table = 'category';
+    } else if (type === 'sub-category') {
+      table = 'sub_category';
+    }    else {
+      return sendResponse(res, false, {}, 'Invalid type, must be "user" or "salon" or "category" or "sub-category"', 400);
     }
 
     // Update status
