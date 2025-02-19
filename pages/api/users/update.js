@@ -64,14 +64,15 @@ export default async function handler(req, res) {
                state = COALESCE($4, state),
                zipcode = COALESCE($5, zipcode),
                updated_at = NOW()
-           WHERE user_id = $1`,
+           WHERE user_id = $1
+           RETURNING street, city, state, zipcode, status`,
            [id, street || null, city || null, state || null, zipcode || null]
         );
       } else {
         // Insert new address
         updatedAddress = await db.one(
           `INSERT INTO user_addresses (user_id, street, city, state, zipcode, status, created_at, updated_at) 
-           VALUES ($1, $2, $3, $4, $5, 'Active', NOW(), NOW())`,
+           VALUES ($1, $2, $3, $4, $5, 'Active', NOW(), NOW()) RETURNING street, city, state, zipcode, status`,
           [id, street, city, state, zipcode]
         );
       }
