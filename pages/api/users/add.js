@@ -57,7 +57,7 @@ export default async function handler(req, res) {
     let updatedAddress = null;
     if (address) {
       const { city, state, zipcode, street } = address;
-      updatedAddress = await db.none(
+      updatedAddress = await db.one(
         `INSERT INTO user_addresses (user_id, street, city, state, zipcode, status, created_at, updated_at) 
          VALUES ($1, $2, $3, $4, $5, 'Active', NOW(), NOW())`,
         [newUser.id, street || null, city || null, state || null, zipcode || null]

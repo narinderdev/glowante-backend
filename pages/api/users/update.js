@@ -69,7 +69,7 @@ export default async function handler(req, res) {
         );
       } else {
         // Insert new address
-        updatedAddress = await db.none(
+        updatedAddress = await db.one(
           `INSERT INTO user_addresses (user_id, street, city, state, zipcode, status, created_at, updated_at) 
            VALUES ($1, $2, $3, $4, $5, 'Active', NOW(), NOW())`,
           [id, street, city, state, zipcode]
