@@ -1,5 +1,5 @@
-import db from '../../../../lib/db';
-import { sendResponse } from '../../../../lib/response';
+import db from '../../../lib/db';
+import { sendResponse } from '../../../lib/response';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {

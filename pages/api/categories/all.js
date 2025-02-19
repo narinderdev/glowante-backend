@@ -1,4 +1,4 @@
-import ServiceModel from '../../../models/ServiceModel';
+import ServiceModel from '../../../models/CategoryModel';
 import { sendResponse } from '../../../lib/response';
 
 export default async function handler(req, res) {
