@@ -29,7 +29,7 @@ export default async function handler(req, res) {
         distance: "5 Km",
         salon_picture_url: "https://example.com/salon1.jpg",
 
-        services: [
+        categories: [
           {
             id: 101,
             name: "Hydrating Facial",

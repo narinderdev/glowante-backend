@@ -7,19 +7,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { salon_id, service_id, subservice_id, price, duration, description } = req.body;
+    const { salon_id, category_id, sub_category_id, price, duration, description } = req.body;
 
-    if (!salon_id || !service_id || !subservice_id || !price || !duration) {
+    if (!salon_id || !category_id || !sub_category_id || !price || !duration || !description) {
       return sendResponse(res, false, {}, 'Missing required fields', 400);
     }
 
     const salon_service = await db.one(
-      `INSERT INTO salon_services (salon_id, service_id, subservice_id, price, duration, description) 
+      `INSERT INTO salon_services (salon_id, category_id, sub_category_id, price, duration, description) 
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [salon_id, service_id, subservice_id, price, duration, description]
+      [salon_id, category_id, sub_category_id, price, duration, description]
     );
 
-    return sendResponse(res, true, salon_service, 'Salon service added successfully', 0);
+    return sendResponse(res, true, salon_service, '', 0);
   } catch (error) {
     console.error('Error inserting salon service:', error);
     return sendResponse(res, false, {}, 'Failed to add salon service', 500);

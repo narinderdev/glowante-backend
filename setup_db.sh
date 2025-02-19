@@ -119,11 +119,21 @@ CREATE TABLE IF NOT EXISTS user_addresses (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS services (
+CREATE TABLE IF NOT EXISTS category (
     id SERIAL PRIMARY KEY,
-    service_name VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     description VARCHAR(255),
     status VARCHAR(20) DEFAULT 'Active'
+);
+
+CREATE TABLE IF NOT EXISTS sub_category (
+    id SERIAL PRIMARY KEY,
+    category_id INT REFERENCES category(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    description VARCHAR(255),
+    status VARCHAR(20) DEFAULT 'Active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS salons (
@@ -147,21 +157,11 @@ CREATE TABLE IF NOT EXISTS salons (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS subservices (
-    id SERIAL PRIMARY KEY,
-    service_id INT REFERENCES services(id) ON DELETE CASCADE,
-    subservice_name VARCHAR(255) NOT NULL,
-    subservice_description VARCHAR(255),
-    status VARCHAR(20) DEFAULT 'Active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE IF NOT EXISTS salon_services (
     id SERIAL PRIMARY KEY,
     salon_id INT REFERENCES salons(id) ON DELETE CASCADE,
-    service_id INT REFERENCES services(id) ON DELETE CASCADE,
-    subservice_id INT REFERENCES subservices(id) ON DELETE CASCADE,
+    category_id INT REFERENCES category(id) ON DELETE CASCADE,
+    sub_category_id INT REFERENCES sub_category(id) ON DELETE CASCADE,
     price VARCHAR(10),
     duration VARCHAR(100),
     description VARCHAR(255),
