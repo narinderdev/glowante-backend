@@ -7,18 +7,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { subcategory_id, category_id, name, description } = req.body;
+    const { id, category_id, name, description } = req.body;
 
-    if (!subcategory_id || !category_id || !name) {
+    if (!id || !category_id || !name) {
       return sendResponse(res, false, {}, 'Subcategory ID, Category ID, and name are required', 400);
     }
 
     const updatedSubcategory = await db.one(
       `UPDATE sub_category SET category_id = $1, name = $2, description = $3, updated_at = NOW() WHERE id = $4 RETURNING *`,
-      [category_id, name, description, subcategory_id]
+      [category_id, name, description, id]
     );
 
-    return sendResponse(res, true, updatedSubcategory, 'Subcategory updated successfully', 200);
+    return sendResponse(res, true, updatedSubcategory, '', 200);
   } catch (error) {
     console.error('Error updating subcategory:', error);
     return sendResponse(res, false, {}, 'Failed to update subcategory', 500);
