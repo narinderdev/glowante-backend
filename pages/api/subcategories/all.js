@@ -18,7 +18,7 @@ export default async function handler(req, res) {
       [category_id]
     );
 
-    return sendResponse(res, true, subcategories, 'Subcategories fetched successfully', 200);
+    return sendResponse(res, true, subcategories, '', 200);
   } catch (error) {
     console.error('Error fetching subcategories:', error);
     return sendResponse(res, false, {}, 'Failed to fetch subcategories', 500);
