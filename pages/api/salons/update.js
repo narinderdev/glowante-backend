@@ -24,10 +24,10 @@ export default async function handler(req, res) {
            alternate_country_code = COALESCE($8, alternate_country_code),
            alternate_phone_no = COALESCE($9, alternate_phone_no),
            email = COALESCE($10, email),
-           opening_time = COALESCE($12, opening_time),
-           closing_time = COALESCE($13, closing_time),
-           salon_description = COALESCE($14, salon_description),
-           salon_picture_url = COALESCE($15, salon_picture_url),
+           opening_time = COALESCE($11, opening_time),
+           closing_time = COALESCE($12, closing_time),
+           salon_description = COALESCE($13, salon_description),
+           salon_picture_url = COALESCE($14, salon_picture_url),
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $1
        RETURNING *`,
