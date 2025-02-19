@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { id, salon_name, address, city, state, country_code, phone_no, alternate_country_code, alternate_phone_no, email, status, opening_time, closing_time, salon_description, salon_picture_url } = req.body;
+    const { id, salon_name, address, city, state, country_code, phone_no, alternate_country_code, alternate_phone_no, email, opening_time, closing_time, salon_description, salon_picture_url } = req.body;
 
     if (!id) {
       return sendResponse(res, false, {}, 'Salon ID is required', 400);
@@ -24,7 +24,6 @@ export default async function handler(req, res) {
            alternate_country_code = COALESCE($8, alternate_country_code),
            alternate_phone_no = COALESCE($9, alternate_phone_no),
            email = COALESCE($10, email),
-           status = COALESCE($11, status),
            opening_time = COALESCE($12, opening_time),
            closing_time = COALESCE($13, closing_time),
            salon_description = COALESCE($14, salon_description),
@@ -32,10 +31,10 @@ export default async function handler(req, res) {
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $1
        RETURNING *`,
-      [id, salon_name, address, city, state, country_code, phone_no, alternate_country_code, alternate_phone_no, email, status, opening_time, closing_time, salon_description, salon_picture_url]
+      [id, salon_name, address, city, state, country_code, phone_no, alternate_country_code, alternate_phone_no, email, opening_time, closing_time, salon_description, salon_picture_url]
     );
 
-    return sendResponse(res, true, updatedSalon, 'Salon updated successfully');
+    return sendResponse(res, true, updatedSalon, '');
   } catch (error) {
     console.error('Error updating salon:', error);
     return sendResponse(res, false, {}, 'Failed to update salon', 500);
