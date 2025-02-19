@@ -123,7 +123,9 @@ CREATE TABLE IF NOT EXISTS category (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description VARCHAR(255),
-    status VARCHAR(20) DEFAULT 'Active'
+    status VARCHAR(20) DEFAULT 'Active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS sub_category (
@@ -207,5 +209,7 @@ check_and_add_column() {
 # Example: Add missing columns
 # check_and_add_column "table_name" "new_column" "new_column_type"
 # This function can be reused for any column checking and adding
+check_and_add_column "category" "created_at" "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+check_and_add_column "category" "updated_at" "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
 
 echo "🎉 Database and table setup completed successfully for '$ENVIRONMENT'! 🚀"
