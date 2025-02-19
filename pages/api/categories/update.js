@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   try {
     const { id, name, description } = req.body;
 
-    if (!category_id || !name) {
+    if (!id || !name) {
       return sendResponse(res, false, {}, 'Category ID and name are required', 400);
     }
 
